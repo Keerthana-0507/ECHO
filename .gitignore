@@ -1,0 +1,19 @@
+# Secrets — never commit your real key
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Conversation logs are user-generated at runtime, not part of the repo
+logs/*.txt
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+
+# Dev screenshots, not part of the deliverable
+screenshot*.png

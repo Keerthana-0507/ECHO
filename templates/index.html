@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ECHO — Voice &amp; Text Assistant</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body data-api-configured="{{ 'true' if api_key_configured else 'false' }}" data-default-model="{{ default_model }}">
+
+  <div class="scanlines"></div>
+
+  <div class="app">
+
+    <!-- HEADER -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◈</span>
+        <div class="brand-text">
+          <h1>ECHO</h1>
+          <p class="brand-sub">conversational interface · flask + gemini</p>
+        </div>
+      </div>
+
+      <div class="status-cluster">
+        <div class="status-pill" id="apiStatus">
+          {% if api_key_configured %}
+            <span class="dot dot--on"></span><span>API: connected</span>
+          {% else %}
+            <span class="dot dot--off"></span><span>API: key missing on server</span>
+          {% endif %}
+        </div>
+        <div class="status-pill" id="micStatus">
+          <span class="dot dot--off"></span>
+          <span>MIC: idle</span>
+        </div>
+        <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Open settings">⚙</button>
+      </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <main class="grid">
+
+      <!-- LEFT: WAVEFORM + CONTROLS -->
+      <section class="panel panel--side">
+        <div class="panel-label">Input Monitor</div>
+
+        <div class="wave-stage" id="waveStage">
+          <canvas id="waveCanvas"></canvas>
+          <div class="wave-state" id="waveState">SILENT</div>
+        </div>
+
+        <button class="mic-btn" id="micBtn" aria-label="Start voice input">
+          <span class="mic-ring"></span>
+          <span class="mic-icon">●</span>
+        </button>
+        <p class="mic-hint" id="micHint">Tap to speak</p>
+
+        <div class="divider"></div>
+
+        <div class="panel-label">Session Tools</div>
+        <button class="ghost-btn" id="exportBtn">⬇ Export transcript (.txt)</button>
+        <button class="ghost-btn" id="clearBtn">✕ Clear conversation</button>
+
+        <div class="divider"></div>
+
+        <div class="panel-label">Voice Output</div>
+        <label class="toggle-row">
+          <span>Speak responses</span>
+          <input type="checkbox" id="ttsToggle" checked />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+
+        <label class="slider-row">
+          <span>Voice rate</span>
+          <input type="range" id="rateSlider" min="0.6" max="1.6" step="0.1" value="1" />
+        </label>
+
+        <select id="voiceSelect" class="voice-select"></select>
+      </section>
+
+      <!-- CENTER: CONVERSATION -->
+      <section class="panel panel--main">
+        <div class="panel-label panel-label--row">
+          <span>Conversation Log</span>
+          <span class="msg-count" id="msgCount">0 exchanges</span>
+        </div>
+
+        <div class="console" id="console">
+          <div class="console-line console-line--system">
+            <span class="line-tag">SYS</span>
+            <span class="line-text">{% if api_key_configured %}Echo online. Type a message or tap the mic to speak.{% else %}Echo's server has no Gemini API key configured yet — add GEMINI_API_KEY to your .env file and restart Flask.{% endif %}</span>
+          </div>
+        </div>
+
+        <div class="composer">
+          <textarea id="textInput" placeholder="Type a message…" rows="1"></textarea>
+          <button class="send-btn" id="sendBtn" aria-label="Send message">➤</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footbar">
+      <span>Speech I/O via Web Speech API (browser) · Responses via Gemini (Flask server)</span>
+      <span id="clock">--:--:--</span>
+    </footer>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Settings</h2>
+        <button class="icon-btn" id="closeModal" aria-label="Close settings">✕</button>
+      </div>
+
+      <p class="field-hint" style="margin-top:0;">
+        The Gemini API key lives only on the server (your <code>.env</code> file) — it is
+        never sent to or stored in this browser. These settings affect this session only.
+      </p>
+
+      <label class="field-label" for="modelSelect">Model</label>
+      <select id="modelSelect" class="field-input">
+        <option value="gemini-2.5-flash">gemini-2.5-flash (fast, recommended)</option>
+        <option value="gemini-2.5-pro">gemini-2.5-pro (higher quality, slower)</option>
+      </select>
+
+      <label class="field-label" for="personaInput">System persona (optional)</label>
+      <textarea id="personaInput" class="field-input" rows="3" placeholder="e.g. You are a concise, friendly assistant."></textarea>
+
+      <button class="primary-btn" id="saveSettings">Save &amp; close</button>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
